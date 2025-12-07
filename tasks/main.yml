@@ -6,6 +6,8 @@
   ansible.builtin.include_tasks:
     file: configure_firewall.yml
   when: ansible_os_family == 'RedHat'
+  apply:
+    become: true
 
 - name: Check garage version
   ansible.builtin.include_tasks:
@@ -15,10 +17,14 @@
   ansible.builtin.import_tasks: install_garage.yml
   when: current_garage_version is defined and current_garage_version is version(garage_version, '<')
   throttle: 1
+  apply:
+    become: true
 
 - name: Install Garage
   ansible.builtin.include_tasks: install_garage.yml
   when: current_garage_version is not defined or not (current_garage_version is defined and current_garage_version == garage_version)
+  apply:
+    become: true
 
 - name: Configure Garage
   ansible.builtin.include_tasks:
@@ -28,11 +34,15 @@
   ansible.builtin.include_tasks:
     file: nginx.yml
   when: garage_nginx_enabled
+  apply:
+    become: true
 
 - name: Install keepalived
   ansible.builtin.import_role:
     name: evrardjp.keepalived
   when: garage_keepalived_enabled and ansible_play_hosts | length > 1
+  apply:
+    become: true
 
 - name: Create Garage buckets
   ansible.builtin.include_tasks:
