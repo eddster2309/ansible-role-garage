@@ -94,6 +94,10 @@ garage_nginx_http_redirect_https: true
 # garage_nginx_ssl_cert: /etc/ssl/certs/garage.crt
 # garage_nginx_ssl_key: /etc/ssl/private/garage.key
 
+# Garage supports specific nodes to act as Gateway nodes, set this variable to true for specific hosts in the host vars for the host to be assigned as a Gateway node 
+# NOTE: A node cannot be a storage node and a gateway node so ensure you have enough nodes for both.
+garage_gateway_node: false
+
 garage_keepalived_enabled: true
 # The VIP for the Garage service, used by keepalived
 # garage_vip: 0.0.0.0
