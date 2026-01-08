@@ -3,6 +3,34 @@
     name: nginx
     state: present
 
+- name: Check for existing default_server configuration
+  block:
+    - name: Check for existing default_server directives (excluding comments and garage.conf)
+      ansible.builtin.shell: |
+        set -o pipefail
+        find /etc/nginx/sites-enabled/ /etc/nginx/conf.d/ -type f ! -name 'garage.conf' 2>/dev/null | \
+        xargs grep -h "default_server" 2>/dev/null | \
+        grep -v '^\s*#' || true
+      args:
+        executable: /bin/bash
+      register: existing_default_servers
+      changed_when: false
+      failed_when: false
+
+    - name: Set fact to skip default_server if already exists
+      ansible.builtin.set_fact:
+        garage_nginx_manage_default_server: "{{ existing_default_servers.stdout | length == 0 }}"
+
+    - name: Inform about default_server management decision
+      ansible.builtin.debug:
+        msg: >-
+          {% if garage_nginx_manage_default_server %}
+          Will manage default_server directive in garage nginx config (no conflicts detected).
+          {% else %}
+          Skipping default_server directive in garage config - found existing default_server:
+          {{ existing_default_servers.stdout }}
+          {% endif %}
+
 - name: Create nginx configuration file
   ansible.builtin.template:
     src: nginx.conf.j2
@@ -10,6 +38,7 @@
     mode: '0644'
     owner: root
     group: root
+    validate: /usr/sbin/nginx -t
   notify: Restart nginx
 
 - name: Start and enable nginx service

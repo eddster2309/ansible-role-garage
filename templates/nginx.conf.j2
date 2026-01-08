@@ -16,6 +16,7 @@ upstream garage_web_backend {
     {% endfor %}
 }
 
+{% if garage_nginx_manage_default_server | default(true) %}
 # Default route to destroy invalid requests
 server {
     listen 80 default_server;
@@ -31,6 +32,7 @@ server {
     ssl_certificate_key {{ garage_nginx_ssl_key }};
     {% endif %}
 }
+{% endif %}
 
 {% if garage_nginx_ssl_enabled and garage_nginx_http_redirect_https %}
 # HTTP to HTTPS redirection
