@@ -11,6 +11,10 @@ garage_architecture: "{{ ansible_architecture }}"
 # The version tag should be in the format vX.Y.Z
 garage_version: "latest"
 
+# Should this role configure the firewall using sensible defaults
+# This will lock down the Admin API to cluster only and only expose the S3 and Web ports to all traffic
+garage_firewall_configure: false
+
 # It is not recommended to change this value after installation.
 # Please refer to the documentation for more information: https://garagehq.deuxfleurs.fr/documentation/reference-manual/configuration/#replication_factor
 garage_replication_factor: "{{ ansible_play_hosts | length }}"
@@ -78,7 +82,7 @@ garage_admin_token: SECRET
 garage_metrics_token: SECRET
 
 # Ports
-# The RPC and Admin ports are not exposed outside the cluster.
+# The RPC and Admin ports are not exposed outside the cluster when configured using the default Firewall setup.
 garage_admin_api_port: 3903
 garage_rpc_port: 3901
 garage_s3_port: 3900
@@ -93,6 +97,10 @@ garage_nginx_ssl_enabled: false
 garage_nginx_http_redirect_https: true
 # garage_nginx_ssl_cert: /etc/ssl/certs/garage.crt
 # garage_nginx_ssl_key: /etc/ssl/private/garage.key
+
+# Garage supports specific nodes to act as Gateway nodes, set this variable to true for specific hosts in the host vars for the host to be assigned as a Gateway node 
+# NOTE: A node cannot be a storage node and a gateway node so ensure you have enough nodes for both.
+garage_gateway_node: false
 
 garage_keepalived_enabled: true
 # The VIP for the Garage service, used by keepalived

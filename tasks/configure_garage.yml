@@ -14,26 +14,46 @@
   ansible.builtin.shell: |
     garage node id -q
   changed_when: false
-  register: garage_node_id
+  register: garage_node_id  
+  environment:
+    # Start from the remote environment PATH, then add common system dirs
+    PATH: "{{ ansible_env.PATH | default('/usr/bin:/bin') }}:/usr/local/bin:/usr/local/sbin:/usr/sbin:/sbin:/snap/bin"
 
 - name: Save garage node id
   ansible.builtin.set_fact:
     garage_node_id: "{{ garage_node_id.stdout }}"
 
 - name: Loop connect garage nodes
-  ansible.builtin.command:
+  ansible.builtin.shell:
     cmd: "garage node connect {{ hostvars[item]['garage_node_id'] }}"
   loop: "{{ ansible_play_hosts | reject('equalto', inventory_hostname) }}"
   delegate_to: "{{ ansible_play_hosts[0] }}"
   changed_when: false
   run_once: true
   when: ansible_play_hosts | length > 1
+  environment:
+    # Start from the remote environment PATH, then add common system dirs
+    PATH: "{{ ansible_env.PATH | default('/usr/bin:/bin') }}:/usr/local/bin:/usr/local/sbin:/usr/sbin:/sbin:/snap/bin"
 
-- name: Assign layout
-  ansible.builtin.command:
+- name: Assign layout (Storage Nodes)
+  ansible.builtin.shell:
     cmd: "garage layout assign {{ garage_node_id.split('@')[0] }} -z {{ garage_zone_name }} -c {{ garage_node_capacity }}"
   changed_when: false
   delegate_to: "{{ ansible_play_hosts[0] }}"
+  when: not garage_gateway_node 
+  environment:
+    # Start from the remote environment PATH, then add common system dirs
+    PATH: "{{ ansible_env.PATH | default('/usr/bin:/bin') }}:/usr/local/bin:/usr/local/sbin:/usr/sbin:/sbin:/snap/bin"
+
+- name: Assign layout (Gateway Nodes)
+  ansible.builtin.shell:
+    cmd: "garage layout assign --gateway {{ garage_node_id.split('@')[0] }} -z {{ garage_zone_name }}"
+  changed_when: false
+  delegate_to: "{{ ansible_play_hosts[0] }}"
+  when: garage_gateway_node 
+  environment:
+    # Start from the remote environment PATH, then add common system dirs
+    PATH: "{{ ansible_env.PATH | default('/usr/bin:/bin') }}:/usr/local/bin:/usr/local/sbin:/usr/sbin:/sbin:/snap/bin"
 
 - name: Get current layout verion number
   ansible.builtin.uri:
@@ -50,7 +70,10 @@
   delegate_to: "{{ ansible_play_hosts[0] }}"
 
 - name: Apply Layout
-  ansible.builtin.command: "garage layout apply --version {{ new_layout_version }}"
+  ansible.builtin.shell: "garage layout apply --version {{ new_layout_version }}"
   changed_when: false
   run_once: true
-  delegate_to: "{{ ansible_play_hosts[0] }}"
+  delegate_to: "{{ ansible_play_hosts[0] }}" 
+  environment:
+    # Start from the remote environment PATH, then add common system dirs
+    PATH: "{{ ansible_env.PATH | default('/usr/bin:/bin') }}:/usr/local/bin:/usr/local/sbin:/usr/sbin:/sbin:/snap/bin"
