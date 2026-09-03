@@ -11,7 +11,7 @@ Group={{ garage_group }}
 PrivateTmp=yes
 RemoveIPC=yes
 ProtectSystem=strict
-ReadWritePaths={{ garage_data_directory }} {{ garage_metadata_directory }}
+ReadWritePaths={{ ([garage_metadata_directory] + (garage_data_directories | map(attribute='path') | list)) | join(' ') }}
 ProtectHome=true
 NoNewPrivileges=true
 LimitNOFILE=42000

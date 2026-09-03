@@ -21,6 +21,19 @@ ansible-galaxy install eddster2309.garage
 ## Configuring this role
 The configuration options for this role can be found in [defaults/main.yml](./defaults/main.yml). **Make sure to change all secrets!**
 
+### Multiple data volumes
+Garage's data storage can be spread across multiple volumes (e.g. separate disks or mounts) by defining several entries in `garage_data_directories`:
+```yaml
+garage_data_directories:
+  - path: /mnt/disk1/garage-data
+    capacity: 2T
+  - path: /mnt/disk2/garage-data
+    capacity: 2T
+  - path: /mnt/disk3/garage-data
+    read_only: true
+```
+Each volume needs a `path`, and a `capacity` unless `read_only` is set to `true`. Refer to [Garage's documentation](https://garagehq.deuxfleurs.fr/documentation/reference-manual/configuration/#data_dir) for more details. The sum of volume capacities should generally match `garage_node_capacity`, which is what's announced to the cluster layout.
+
 ## Upgrading Garage
 By default this role will always pull the latest version of the binary, but it is reccomended that you set the `garage_version` variable to a particular version (not `latest`) and then read the [release notes](https://git.deuxfleurs.fr/Deuxfleurs/garage/releases) before upgrading.
 

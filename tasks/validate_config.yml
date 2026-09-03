@@ -28,6 +28,15 @@
       - garage_db_engine != 'sled' or garage_version is version('0.9.0', '<')
     msg: "The database engine must be one of 'sqlite', 'lmdb', or 'sled' (pre v0.9.0)."
 
+- name: Check that each data volume has a capacity unless read-only
+  ansible.builtin.assert:
+    that:
+      - (item.capacity is defined and item.capacity | length > 0) or (item.read_only | default(false))
+    msg: "Volume '{{ item.path }}' in garage_data_directories must define a 'capacity' unless 'read_only' is true."
+  loop: "{{ garage_data_directories }}"
+  loop_control:
+    label: "{{ item.path }}"
+
 - name: Check that compression level is valid
   ansible.builtin.assert:
     that:

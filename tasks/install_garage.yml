@@ -27,10 +27,9 @@
     mode: "0700"
     owner: "{{ garage_user }}"
     group: "{{ garage_group }}"
-  loop:
-    - "{{ garage_metadata_directory }}"
-    - "{{ garage_data_directory }}"
-    - "{{ garage_metadata_snapshot_directory }}"
+  loop: >-
+    {{ [garage_metadata_directory, garage_metadata_snapshot_directory]
+       + (garage_data_directories | map(attribute='path') | list) }}
 
 - name: Create Garage systemd service file
   ansible.builtin.template:
