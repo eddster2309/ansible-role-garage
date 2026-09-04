@@ -1,5 +1,9 @@
 metadata_dir = "{{ garage_metadata_directory }}"
-data_dir = "{{ garage_data_directory }}"
+data_dir = [
+{% for volume in garage_data_directories %}
+    { path = "{{ volume.path }}"{% if volume.capacity is defined and volume.capacity %}, capacity = "{{ volume.capacity }}"{% endif %}{% if volume.read_only | default(false) %}, read_only = true{% endif %} },
+{% endfor %}
+]
 db_engine = "{{ garage_db_engine }}"
 
 replication_factor = {{ garage_replication_factor }}
