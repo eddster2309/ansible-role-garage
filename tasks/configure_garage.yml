@@ -12,7 +12,7 @@
 
 - name: Get node id
   ansible.builtin.shell: |
-    garage node id -q
+    {{ garage_binary }} node id -q
   changed_when: false
   register: garage_node_id
 
@@ -31,7 +31,7 @@
 
 - name: Assign layout
   ansible.builtin.command:
-    cmd: "garage layout assign {{ garage_node_id.split('@')[0] }} -z {{ garage_zone_name }} -c {{ garage_node_capacity }}"
+    cmd: "{{ garage_binary }} layout assign {{ garage_node_id.split('@')[0] }} -z {{ garage_zone_name }} -c {{ garage_node_capacity }}"
   changed_when: false
   delegate_to: "{{ ansible_play_hosts[0] }}"
 
@@ -50,7 +50,7 @@
   delegate_to: "{{ ansible_play_hosts[0] }}"
 
 - name: Apply Layout
-  ansible.builtin.command: "garage layout apply --version {{ new_layout_version }}"
+  ansible.builtin.command: "{{ garage_binary }} layout apply --version {{ new_layout_version }}"
   changed_when: false
   run_once: true
   delegate_to: "{{ ansible_play_hosts[0] }}"
